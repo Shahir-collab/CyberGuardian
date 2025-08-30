@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confidential Support - CyberGuardian AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .crisis-banner {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .crisis-banner.show {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 60vh;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.bot {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px;
+            border-radius: 15px;
+            word-wrap: break-word;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-top-left-radius: 5px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-top-right-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .message.user .message-time {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .support-actions {
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .action-btn {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .crisis-resources {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        .crisis-resources h4 {
+            margin-bottom: 10px;
+        }
+
+        .crisis-resources .resource {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .crisis-resources .resource button {
+            background: white;
+            color: #e53e3e;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .chat-input-container {
+            background: white;
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .typing-indicator.show {
+            display: block;
+        }
+
+        .typing-dots {
+            display: inline-block;
+        }
+
+        .typing-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .privacy-notice {
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            margin: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .emotional-support {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .practical-steps {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .step-list li:before {
+            content: "✓ ";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .support-actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤗 Confidential Support Chat</h1>
+        <p>You're safe here. Everything is private and encrypted.</p>
+    </div>
+
+    <div class="crisis-banner" id="crisisBanner">
+        <h3>🚨 CRISIS SUPPORT ACTIVATED</h3>
+        <p>If you're in immediate danger or thinking of self-harm, please call emergency services: 112</p>
+    </div>
+
+    <div class="privacy-notice">
+        🔒 <strong>Your Privacy:</strong> This chat is completely confidential. No personal information is stored or shared.
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be populated here -->
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div style="display: flex; align-items: center;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                    🤖
+                </div>
+                <span>Support assistant is typing</span>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="support-actions" id="supportActions">
+            <button class="action-btn" onclick="quickResponse('I need immediate help')">🚨 I need immediate help</button>
+            <button class="action-btn" onclick="quickResponse('I'm being blackmailed')">😰 I'm being blackmailed</button>
+            <button class="action-btn" onclick="quickResponse('Family emergency scam')">👨‍👩‍👧‍👦 Family emergency scam</button>
+            <button class="action-btn" onclick="quickResponse('I sent money to scammer')">💰 I sent money to scammer</button>
+            <button class="action-btn" onclick="quickResponse('I'm scared and confused')">😔 I'm scared and confused</button>
+        </div>
+
+        <div class="chat-input-container" style="position: relative;">
+            <input type="text" 
+                   class="chat-input" 
+                   id="messageInput" 
+                   placeholder="Type your message here... Remember, you're safe and not alone."
+                   onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendMessage()">📤</button>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let messageCount = 0;
+        let currentThreatType = 'general';
+        let isTyping = false;
+
+        // Initialize chat
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get threat type from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            currentThreatType = urlParams.get('type') || 'general';
+            
+            // Initialize session
+            sessionId = 'support_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Send initial message
+            setTimeout(() => {
+                sendBotMessage(getInitialMessage());
+            }, 1000);
+        });
+
+        function getInitialMessage() {
+            const messages = {
+                sextortion: {
+                    message: "🤗 Hello, I'm here to help you through this difficult situation. First, I want you to know that what you're experiencing is NOT your fault, and you are NOT alone.",
+                    additional: [
+                        "I understand you might be feeling scared, ashamed, or confused right now. These feelings are completely normal.",
+                        "You've taken a brave step by reaching out. We're going to work through this together, step by step."
+                    ],
+                    actions: [
+                        "The most important thing right now: DO NOT send any money or more content to the person threatening you.",
+                        "Take screenshots of all conversations as evidence - don't delete anything.",
+                        "Remember: You are the victim of a crime. The person threatening you is breaking the law."
+                    ]
+                },
+                family_impersonation: {
+                    message: "🤗 Hi there. I can see you're dealing with what might be a family impersonation scam. You did the right thing by checking this.",
+                    additional: [
+                        "These scams can be very convincing and emotionally manipulative. It's natural to feel worried when someone claims to be your family member in trouble.",
+                        "Let's figure out together whether this is really your family member or a scammer trying to trick you."
+                    ],
+                    actions: [
+                        "First step: Try to contact your family member directly through their known phone number.",
+                        "Ask specific questions that only your real family member would know the answer to.",
+                        "Remember: Real emergencies don't usually come with urgent payment demands through text."
+                    ]
+                },
+                general: {
+                    message: "🤗 Hello, welcome to CyberGuardian AI's confidential support chat. I'm here to help you with any cyber security concerns or if you're dealing with online threats.",
+                    additional: [
+                        "This is a safe space where you can share what's happening without judgment.",
+                        "Everything you tell me is completely confidential and private."
+                    ],
+                    actions: [
+                        "Feel free to tell me what's going on in your own words.",
+                        "If you're in immediate crisis, we have emergency resources available.",
+                        "Take your time - there's no pressure to share more than you're comfortable with."
+                    ]
+                }
+            };
+
+            return messages[currentThreatType] || messages.general;
+        }
+
+        function sendBotMessage(messageData) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Main message
+            addMessageToChat('bot', messageData.message);
+            
+            // Additional support messages with delay
+            if (messageData.additional) {
+                messageData.additional.forEach((msg, index) => {
+                    setTimeout(() => {
+                        addMessageToChat('bot', msg);
+                    }, (index + 1) * 2000);
+                });
+            }
+
+            // Action items or crisis resources
+            if (messageData.actions) {
+                setTimeout(() => {
+                    const actionHtml = `
+                        <div class="practical-steps">
+                            <h4>🛡️ Immediate Steps:</h4>
+                            <ul class="step-list">
+                                ${messageData.actions.map(action => `<li>${action}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    addCustomContent(actionHtml);
+                }, messageData.additional ? (messageData.additional.length + 1) * 2000 : 2000);
+            }
+
+            // Add crisis resources for high-risk situations
+            if (currentThreatType === 'sextortion') {
+                setTimeout(() => {
+                    addCrisisResources();
+                }, 6000);
+            }
+        }
+
+        function addMessageToChat(sender, message, isCustom = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const currentTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            if (isCustom) {
+                messageDiv.innerHTML = message;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        ${sender === 'bot' ? '🤖' : '👤'}
+                    </div>
+                    <div class="message-content">
+                        <div>${message}</div>
+                        <div class="message-time">${currentTime}</div>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            messageCount++;
+        }
+
+        function addCustomContent(htmlContent) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const contentDiv = document.createElement('div');
+            contentDiv.innerHTML = htmlContent;
+            messagesContainer.appendChild(contentDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addCrisisResources() {
+            const crisisHtml = `
+                <div class="crisis-resources">
+                    <h4>🚨 CRISIS SUPPORT RESOURCES</h4>
+                    <p>If you're feeling overwhelmed or having thoughts of self-harm, please reach out:</p>
+                    <div class="resource">
+                        <span>📞 Suicide Prevention (AASRA)</span>
+                        <button onclick="window.open('tel:9152987821')">Call Now</button>
+                    </div>
+                    <div class="resource">
+                        <span>📞 Mental Health Support (iCall)</span>
+                        <button onclick="window.open('tel:9820466726')">Call Now</button>
+                    </div>
+                    <div class="resource">
+                        <span>📞 Cyber Crime Helpline</span>
+                        <button onclick="window.open('tel:1930')">Call 1930</button>
+                    </div>
+                    <div class="resource">
+                        <span>📞 Emergency Services</span>
+                        <button onclick="window.open('tel:112')">Call 112</button>
+                    </div>
+                </div>
+            `;
+            addCustomContent(crisisHtml);
+        }
+
+        function showTypingIndicator() {
+            if (isTyping) return;
+            isTyping = true;
+            document.getElementById('typingIndicator').classList.add('show');
+        }
+
+        function hideTypingIndicator() {
+            isTyping = false;
+            document.getElementById('typingIndicator').classList.remove('show');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessageToChat('user', message);
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Process message and generate response
+            setTimeout(() => {
+                const response = generateSupportResponse(message);
+                hideTypingIndicator();
+                
+                // Check for crisis indicators
+                if (detectCrisis(message)) {
+                    document.getElementById('crisisBanner').classList.add('show');
+                    addCrisisResources();
+                }
+                
+                addMessageToChat('bot', response.message);
+                
+                if (response.additional) {
+                    response.additional.forEach((msg, index) => {
+                        setTimeout(() => {
+                            addMessageToChat('bot', msg);
+                        }, (index + 1) * 1500);
+                    });
+                }
+                
+                if (response.actions) {
+                    setTimeout(() => {
+                        const actionHtml = `
+                            <div class="practical-steps">
+                                <h4>📋 Next Steps:</h4>
+                                <ul class="step-list">
+                                    ${response.actions.map(action => `<li>${action}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                        addCustomContent(actionHtml);
+                    }, response.additional ? (response.additional.length + 1) * 1500 : 1500);
+                }
+            }, 1000 + Math.random() * 2000); // Realistic typing delay
+        }
+
+        function generateSupportResponse(message) {
+            const messageLower = message.toLowerCase();
+            
+            // Crisis detection
+            if (detectCrisis(message)) {
+                return {
+                    message: "🚨 I can see you're in serious distress right now. Please know that help is available and you don't have to face this alone.",
+                    additional: [
+                        "If you're having thoughts of self-harm, please reach out to a crisis helpline immediately. They have trained professionals who can help.",
+                        "Remember: This situation is temporary. With the right support and steps, things can and will get better."
+                    ],
+                    actions: [
+                        "Call suicide prevention helpline: 9152987821 (AASRA) - they're available 24/7",
+                        "If in immediate danger, call emergency services: 112",
+                        "Consider telling a trusted friend, family member, or counselor about what you're going through",
+                        "Keep talking to me - I'm here to support you through this"
+                    ]
+                };
+            }
+
+            // Sextortion support
+            if (/blackmail|sextortion|intimate.*photo|video.*threat|nude.*photo/i.test(messageLower)) {
+                return {
+                    message: "💙 I understand this is an incredibly difficult and scary situation. What you're experiencing is called sextortion, and it's a serious crime.",
+                    additional: [
+                        "First, I want to emphasize: this is NOT your fault. The person threatening you is committing a crime.",
+                        "Many people face this situation. You're not alone, and there are ways to handle this safely."
+                    ],
+                    actions: [
+                        "DO NOT send any money or additional content - this usually makes the situation worse",
+                        "Take screenshots of all communications as evidence",
+                        "Report to cyber crime helpline: 1930 - they handle these cases regularly",
+                        "Consider filing a police complaint - you are the victim of a crime",
+                        "Block the person on all platforms after documenting everything"
+                    ]
+                };
+            }
+
+            // Family impersonation
+            if (/family.*emergency|mom.*money|dad.*help|parent.*accident/i.test(messageLower)) {
+                return {
+                    message: "🤔 It sounds like someone claiming to be your family member is asking for money in an 'emergency' situation. This is a very common scam tactic.",
+                    additional: [
+                        "Scammers often create fake emergencies to make you act quickly without thinking.",
+                        "Real family emergencies usually involve direct phone calls, not just text messages asking for money."
+                    ],
+                    actions: [
+                        "Call your family member directly on their known phone number - don't use any number provided in the message",
+                        "Ask specific questions that only your real family member would know",
+                        "If they claim to be in a hospital, call the hospital directly to verify",
+                        "Talk to other family members before sending any money",
+                        "Trust your instincts - if something feels off, it probably is"
+                    ]
+                };
+            }
+
+            // Money already sent
+            if (/sent.*money|already.*paid|gave.*them/i.test(messageLower)) {
+                return {
+                    message: "😔 I understand you've already sent money to the scammer. This is a difficult situation, but there are still steps we can take.",
+                    additional: [
+                        "Don't blame yourself - these scammers are professionals who manipulate people's emotions and fears.",
+                        "The sooner you act, the better chance there is of recovering some of the money or preventing further losses."
+                    ],
+                    actions: [
+                        "Contact your bank immediately to report the fraudulent transaction",
+                        "If it was a UPI/digital payment, report to the app provider (Google Pay, PhonePe, etc.)",
+                        "File a complaint at cybercrime.gov.in with all transaction details",
+                        "Call cyber crime helpline 1930 for immediate assistance",
+                        "Block all communication with the scammer to prevent further attempts",
+                        "Keep all evidence - screenshots, transaction IDs, phone numbers"
+                    ]
+                };
+            }
+
+            // Emotional support
+            if (/scared|afraid|don't know|confused|ashamed|embarrassed/i.test(messageLower)) {
+                return {
+                    message: "🫂 Your feelings are completely valid and understandable. Dealing with cyber threats can be emotionally overwhelming.",
+                    additional: [
+                        "It's normal to feel scared, confused, or even ashamed - but remember, you are the victim here, not the one doing anything wrong.",
+                        "Taking the step to reach out for help shows incredible courage and strength."
+                    ],
+                    actions: [
+                        "Take some deep breaths - you're safe right now in this moment",
+                        "Remember that this situation is temporary and can be resolved",
+                        "Consider talking to a trusted friend or family member for emotional support",
+                        "Focus on one step at a time rather than trying to solve everything at once",
+                        "Keep talking to me - I'm here to guide you through this process"
+                    ]
+                };
+            }
+
+            // General supportive response
+            return {
+                message: "💙 Thank you for sharing that with me. I'm here to help you work through this situation step by step.",
+                additional: [
+                    "Can you tell me a bit more about what's happening? The more details you can share, the better I can assist you.",
+                    "Remember, there's no judgment here - I'm focused on helping you stay safe and resolve this situation."
+                ],
+                actions: [
+                    "Take your time to explain the situation in your own words",
+                    "If you have any screenshots or evidence, keep them safe",
+                    "Let me know if you're feeling overwhelmed - we can slow down and focus on immediate safety first"
+                ]
+            };
+        }
+
+        function detectCrisis(message) {
+            const crisisKeywords = [
+                'kill myself', 'suicide', 'end it all', 'can\'t take it', 'want to die',
+                'hurt myself', 'no point living', 'better off dead', 'end my life'
+            ];
+            
+            const messageLower = message.toLowerCase();
+            return crisisKeywords.some(keyword => messageLower.includes(keyword));
+        }
+
+        function quickResponse(responseText) {
+            document.getElementById('messageInput').value = responseText;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Auto-save chat session (in real implementation, this would go to backend)
+        setInterval(() => {
+            if (messageCount > 0) {
+                console.log('Auto-saving chat session...', sessionId);
+                // In production: send to backend API
+            }
+        }, 30000); // Save every 30 seconds
+    </script>
+</body>
+</html>

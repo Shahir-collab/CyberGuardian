@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Conversation Analyzer - CyberGuardian AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .analyzer-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            border: 2px dashed #25D366;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: rgba(37, 211, 102, 0.05);
+        }
+
+        .upload-section input {
+            display: none;
+        }
+
+        .chat-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
+        .analysis-result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .analysis-result.high-risk {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .analysis-result.medium-risk {
+            background: linear-gradient(135deg, #ffa726 0%, #ffcc02 100%);
+            color: #333;
+        }
+
+        .analysis-result.low-risk {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .threat-indicator {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid rgba(255,255,255,0.3);
+        }
+
+        .chat-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            max-width: 70%;
+        }
+
+        .message.sent {
+            background: #dcf8c6;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.received {
+            background: white;
+            border: 1px solid #e1e5e9;
+        }
+
+        .message-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .warning-banner {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .stat-item .label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .family-voice-alert {
+            background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #fff;
+        }
+
+        .sextortion-alert {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #fff;
+        }
+
+        .help-section {
+            background: rgba(255,255,255,0.9);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .instruction-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instruction-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .instruction-list li:before {
+            content: "📱 ";
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .analyzer-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 WhatsApp Conversation Analyzer</h1>
+            <p>Advanced threat detection for WhatsApp conversations</p>
+        </div>
+
+        <div class="warning-banner">
+            <h3>⚠️ Privacy Notice</h3>
+            <p>Your conversations are analyzed locally and encrypted. We prioritize your privacy and security.</p>
+        </div>
+
+        <div class="analyzer-card">
+            <h3>📤 Upload Chat Export</h3>
+            <div class="upload-section" onclick="document.getElementById('chatFile').click()">
+                <input type="file" id="chatFile" accept=".txt,.zip" onchange="handleChatFile(event)">
+                <h4>Click to upload WhatsApp chat export</h4>
+                <p>Supports: .txt files from WhatsApp export</p>
+                <small>📋 Go to WhatsApp → Chat → More → Export Chat (without media)</small>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <span style="color: #666;">OR</span>
+            </div>
+
+            <h3>✏️ Paste Chat Manually</h3>
+            <textarea 
+                class="chat-input" 
+                id="chatInput" 
+                placeholder="Paste your WhatsApp conversation here...
+
+Example format:
+[12/25/23, 10:30:15 AM] Mom: Hi beta, I'm in emergency
+[12/25/23, 10:31:20 AM] You: What happened mom?
+[12/25/23, 10:32:05 AM] Mom: Need money urgently for hospital
+[12/25/23, 10:32:30 AM] You: How much?
+[12/25/23, 10:33:10 AM] Mom: Send 50000 to this account..."></textarea>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" onclick="analyzeChat()">🔍 Analyze Conversation</button>
+                <button class="btn btn-danger" onclick="clearChat()">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <div id="analysisResults" style="display: none;"></div>
+
+        <div class="help-section">
+            <h3>📋 How to Export WhatsApp Chat</h3>
+            <ol class="instruction-list">
+                <li>Open WhatsApp and go to the chat you want to analyze</li>
+                <li>Tap on the contact/group name at the top</li>
+                <li>Scroll down and tap "Export Chat"</li>
+                <li>Choose "Without Media" for faster analysis</li>
+                <li>Save the .txt file and upload it here</li>
+            </ol>
+
+            <h3>🛡️ What We Detect</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="background: #fff3e0; padding: 15px; border-radius: 10px;">
+                    <h4 style="color: #f57c00;">👨‍👩‍👧‍👦 Family Voice Impersonation</h4>
+                    <p>Detects when scammers pretend to be your family members in emergencies</p>
+                </div>
+                <div style="background: #ffebee; padding: 15px; border-radius: 10px;">
+                    <h4 style="color: #d32f2f;">📸 Sextortion Attempts</h4>
+                    <p>Identifies blackmail attempts involving intimate content</p>
+                </div>
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 10px;">
+                    <h4 style="color: #388e3c;">💰 Financial Scams</h4>
+                    <p>Spots UPI fraud, loan scams, and payment requests</p>
+                </div>
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px;">
+                    <h4 style="color: #1976d2;">🎭 Romance Scams</h4>
+                    <p>Detects fake romantic relationships for financial gain</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChatData = null;
+
+        function handleChatFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                document.getElementById('chatInput').value = content;
+                
+                // Show preview
+                const previewDiv = document.createElement('div');
+                previewDiv.innerHTML = `
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                        <h4>📁 File loaded: ${file.name}</h4>
+                        <p>Size: ${(file.size / 1024).toFixed(2)} KB</p>
+                        <p>Lines: ${content.split('\n').length}</p>
+                    </div>
+                `;
+                
+                const uploadSection = document.querySelector('.upload-section');
+                uploadSection.after(previewDiv);
+            };
+            reader.readAsText(file);
+        }
+
+        function clearChat() {
+            document.getElementById('chatInput').value = '';
+            document.getElementById('analysisResults').style.display = 'none';
+            currentChatData = null;
+        }
+
+        function analyzeChat() {
+            const chatContent = document.getElementById('chatInput').value.trim();
+            if (!chatContent) {
+                alert('Please paste a conversation or upload a chat file first.');
+                return;
+            }
+
+            // Show loading
+            const resultsDiv = document.getElementById('analysisResults');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <div class="analyzer-card">
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>🔍 Analyzing conversation...</h3>
+                        <div style="margin: 20px 0;">
+                            <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #25D366; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                        </div>
+                        <p>Please wait while we analyze the conversation for threats...</p>
+                    </div>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+
+            // Parse the chat
+            setTimeout(() => {
+                const parsedChat = parseWhatsAppChat(chatContent);
+                const analysis = analyzeConversation(parsedChat);
+                displayAnalysisResults(analysis, parsedChat);
+            }, 2000);
+        }
+
+        function parseWhatsAppChat(content) {
+            const lines = content.split('\n').filter(line => line.trim());
+            const messages = [];
+            const participants = new Set();
+
+            const messageRegex = /^\[(.*?)\]\s+(.*?):\s+(.*)/;
+            
+            lines.forEach(line => {
+                const match = line.match(messageRegex);
+                if (match) {
+                    const [, dateTime, sender, message] = match;
+                    participants.add(sender);
+                    messages.push({
+                        timestamp: dateTime,
+                        sender: sender,
+                        content: message.trim()
+                    });
+                }
+            });
+
+            return {
+                messages: messages,
+                participants: Array.from(participants),
+                totalMessages: messages.length
+            };
+        }
+
+        function analyzeConversation(chatData) {
+            const threats = [];
+            let familyVoiceScore = 0;
+            let sextortionScore = 0;
+            let overallRiskScore = 0;
+
+            // Family voice impersonation patterns
+            const familyPatterns = [
+                /\b(mom|mother|dad|father|papa|mama|mummy|daddy|maa|baba)\b/i,
+                /\b(beta|beti|son|daughter|child|bachcha)\b/i,
+                /\b(emergency|urgent|help|problem|trouble|accident)\b/i,
+                /\b(money|cash|send|transfer|payment|need)\b/i,
+                /\b(hospital|police|jail|custody|doctor)\b/i,
+                /\b(new phone|lost phone|broken phone|different number)\b/i
+            ];
+
+            // Sextortion patterns
+            const sextortionPatterns = [
+                /\b(photos|pictures|images|video|clip|recording)\b/i,
+                /\b(private|intimate|personal|naked|nude)\b/i,
+                /\b(share|post|send|publish|leak|spread|expose)\b/i,
+                /\b(money|payment|bitcoin|paytm|googlepay|upi)\b/i,
+                /\b(delete|remove|not share|keep secret|hide)\b/i,
+                /\b(family|friends|social media|facebook|whatsapp|instagram)\b/i
+            ];
+
+            // Analyze each message
+            chatData.messages.forEach((msg, index) => {
+                const content = msg.content.toLowerCase();
+                
+                // Check for family voice impersonation
+                let familyMatches = 0;
+                familyPatterns.forEach(pattern => {
+                    if (pattern.test(content)) {
+                        familyMatches++;
+                        familyVoiceScore += 10;
+                    }
+                });
+
+                if (familyMatches >= 3) {
+                    threats.push({
+                        type: 'family_voice_impersonation',
+                        confidence: Math.min(100, familyMatches * 25),
+                        message: msg.content.substring(0, 100) + '...',
+                        sender: msg.sender,
+                        timestamp: msg.timestamp,
+                        description: 'Potential family member impersonation detected'
+                    });
+                }
+
+                // Check for sextortion
+                let sextortionMatches = 0;
+                sextortionPatterns.forEach(pattern => {
+                    if (pattern.test(content)) {
+                        sextortionMatches++;
+                        sextortionScore += 15;
+                    }
+                });
+
+                if (sextortionMatches >= 2) {
+                    threats.push({
+                        type: 'sextortion',
+                        confidence: Math.min(100, sextortionMatches * 30),
+                        message: msg.content.substring(0, 50) + '...',
+                        sender: msg.sender,
+                        timestamp: msg.timestamp,
+                        description: 'Potential sextortion/blackmail attempt detected'
+                    });
+                }
+
+                // Check for other scam indicators
+                const scamKeywords = [
+                    'urgent', 'immediate', 'asap', 'now', 'today', 'quickly',
+                    'money', 'payment', 'transfer', 'send', 'pay', 'cash',
+                    'bank', 'account', 'otp', 'pin', 'password',
+                    'click', 'link', 'download', 'install'
+                ];
+
+                let scamScore = 0;
+                scamKeywords.forEach(keyword => {
+                    if (content.includes(keyword)) {
+                        scamScore += 5;
+                    }
+                });
+
+                overallRiskScore += scamScore;
+            });
+
+            // Calculate total risk
+            const totalScore = familyVoiceScore + sextortionScore + overallRiskScore;
+            
+            let riskLevel;
+            if (totalScore >= 80 || threats.length >= 2) {
+                riskLevel = 'HIGH';
+            } else if (totalScore >= 40 || threats.length >= 1) {
+                riskLevel = 'MEDIUM';
+            } else {
+                riskLevel = 'LOW';
+            }
+
+            return {
+                riskLevel: riskLevel,
+                totalRiskScore: Math.min(totalScore, 100),
+                familyVoiceDetected: familyVoiceScore >= 30,
+                familyVoiceScore: familyVoiceScore,
+                sextortionRisk: Math.min(sextortionScore, 100),
+                threats: threats,
+                messageCount: chatData.messages.length,
+                participantCount: chatData.participants.length,
+                participants: chatData.participants
+            };
+        }
+
+        function displayAnalysisResults(analysis, chatData) {
+            const resultsDiv = document.getElementById('analysisResults');
+            
+            let riskClass = 'low-risk';
+            let riskEmoji = '✅';
+            let riskColor = '#4caf50';
+            
+            if (analysis.riskLevel === 'HIGH') {
+                riskClass = 'high-risk';
+                riskEmoji = '🚨';
+                riskColor = '#f44336';
+            } else if (analysis.riskLevel === 'MEDIUM') {
+                riskClass = 'medium-risk';
+                riskEmoji = '⚠️';
+                riskColor = '#ff9800';
+            }
+
+            let html = `
+                <div class="analyzer-card">
+                    <div class="analysis-result ${riskClass}">
+                        <h2>${riskEmoji} Analysis Complete</h2>
+                        <h3>Risk Level: ${analysis.riskLevel} (${analysis.totalRiskScore}/100)</h3>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="number">${analysis.messageCount}</div>
+                                <div class="label">Messages</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="number">${analysis.participantCount}</div>
+                                <div class="label">Participants</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="number">${analysis.threats.length}</div>
+                                <div class="label">Threats Found</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="number">${analysis.totalRiskScore}%</div>
+                                <div class="label">Risk Score</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Family voice impersonation alert
+            if (analysis.familyVoiceDetected) {
+                html += `
+                    <div class="analyzer-card">
+                        <div class="family-voice-alert">
+                            <h3>🚨 FAMILY VOICE IMPERSONATION DETECTED</h3>
+                            <p><strong>Confidence Score: ${analysis.familyVoiceScore}%</strong></p>
+                            <p>⚠️ Someone may be impersonating your family member!</p>
+                            
+                            <h4>🛡️ Immediate Actions:</h4>
+                            <ul style="text-align: left; margin: 15px 0;">
+                                <li>📞 Call your family member directly on their known number</li>
+                                <li>❓ Ask specific questions only they would know</li>
+                                <li>🏥 If claiming hospital emergency, call the hospital directly</li>
+                                <li>💰 NEVER send money based on urgent text requests</li>
+                                <li>👮 Contact police if this persists: 112</li>
+                            </ul>
+                            
+                            <button class="btn" onclick="getEmergencySupport('family_impersonation')" style="background: white; color: #e91e63;">
+                                💬 Get Immediate Support
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Sextortion alert
+            if (analysis.sextortionRisk >= 50) {
+                html += `
+                    <div class="analyzer-card">
+                        <div class="sextortion-alert">
+                            <h3>🚨 SEXTORTION ATTEMPT DETECTED</h3>
+                            <p><strong>Risk Score: ${analysis.sextortionRisk}%</strong></p>
+                            <p>⚠️ Someone is trying to blackmail you with intimate content!</p>
+                            
+                            <h4>🛡️ Critical Actions - Do This NOW:</h4>
+                            <ul style="text-align: left; margin: 15px 0;">
+                                <li>🚫 DO NOT send any money or more content</li>
+                                <li>📷 Take screenshots of all conversations</li>
+                                <li>🚨 Report to Cyber Crime Helpline: 1930</li>
+                                <li>👮 File police complaint immediately</li>
+                                <li>🤐 DO NOT be ashamed - you are the VICTIM</li>
+                                <li>💬 Talk to someone you trust or our support</li>
+                            </ul>
+                            
+                            <div style="margin-top: 20px;">
+                                <button class="btn" onclick="getEmergencySupport('sextortion')" style="background: white; color: #d32f2f;">
+                                    💬 Get Confidential Support
+                                </button>
+                                <button class="btn" onclick="window.open('tel:1930')" style="background: white; color: #d32f2f;">
+                                    📞 Call 1930 Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Threat details
+            if (analysis.threats.length > 0) {
+                html += `
+                    <div class="analyzer-card">
+                        <h3>🎯 Threat Details</h3>
+                `;
+                
+                analysis.threats.forEach(threat => {
+                    const threatColor = threat.type === 'sextortion' ? '#d32f2f' : 
+                                       threat.type === 'family_voice_impersonation' ? '#e91e63' : '#ff9800';
+                    
+                    html += `
+                        <div class="threat-indicator" style="border-left-color: ${threatColor};">
+                            <h4>${threat.type.replace('_', ' ').toUpperCase()}</h4>
+                            <p><strong>Confidence:</strong> ${threat.confidence}%</p>
+                            <p><strong>From:</strong> ${threat.sender}</p>
+                            <p><strong>Time:</strong> ${threat.timestamp}</p>
+                            <p><strong>Message Preview:</strong> "${threat.message}"</p>
+                            <p><strong>Assessment:</strong> ${threat.description}</p>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            }
+
+            // Recommendations
+            html += `
+                <div class="analyzer-card">
+                    <h3>📋 Security Recommendations</h3>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+            `;
+
+            if (analysis.riskLevel === 'HIGH') {
+                html += `
+                        <h4 style="color: #d32f2f;">🚨 HIGH RISK - Take Immediate Action</h4>
+                        <ul style="text-align: left; color: #333;">
+                            <li>🚫 Stop all communication with suspicious contacts immediately</li>
+                            <li>📱 Block and report the suspicious number</li>
+                            <li>📞 Contact cyber crime helpline: 1930</li>
+                            <li>👮 File a police complaint if money is involved</li>
+                            <li>🔒 Secure your accounts and change passwords</li>
+                            <li>💬 Seek support from trusted friends, family, or professionals</li>
+                        </ul>
+                `;
+            } else if (analysis.riskLevel === 'MEDIUM') {
+                html += `
+                        <h4 style="color: #ff9800;">⚠️ MEDIUM RISK - Stay Alert</h4>
+                        <ul style="text-align: left; color: #333;">
+                            <li>🔍 Verify the identity of suspicious contacts</li>
+                            <li>❌ Don't share personal or financial information</li>
+                            <li>📞 Cross-check any urgent requests independently</li>
+                            <li>🤔 Take time to think before acting on requests</li>
+                            <li>💬 Discuss with trusted contacts if unsure</li>
+                        </ul>
+                `;
+            } else {
+                html += `
+                        <h4 style="color: #4caf50;">✅ LOW RISK - Conversation Appears Safe</h4>
+                        <ul style="text-align: left; color: #333;">
+                            <li>✅ No major threat indicators detected</li>
+                            <li>💡 Continue to stay vigilant in future conversations</li>
+                            <li>📚 Keep learning about new scam techniques</li>
+                            <li>🛡️ Use CyberGuardian AI for future analyses</li>
+                        </ul>
+                `;
+            }
+
+            html += `
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn" onclick="generateDetailedReport()">📄 Generate Detailed Report</button>
+                        <button class="btn" onclick="shareAnalysis()">📤 Share Analysis</button>
+                    </div>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+            
+            // Store analysis data for later use
+            currentChatData = {
+                analysis: analysis,
+                chatData: chatData
+            };
+        }
+
+        function getEmergencySupport(threatType) {
+            // Open support chat with context
+            const supportUrl = threatType === 'sextortion' 
+                ? 'victim-support.html?type=sextortion'
+                : 'victim-support.html?type=family_impersonation';
+            
+            window.open(supportUrl, '_blank', 'width=800,height=600');
+        }
+
+        function generateDetailedReport() {
+            if (!currentChatData) return;
+            
+            const report = `
+CYBERGUARDIAN AI - WHATSAPP CONVERSATION ANALYSIS REPORT
+Generated: ${new Date().toLocaleString()}
+Report ID: WA${Date.now()}
+
+ANALYSIS SUMMARY:
+=================
+Risk Level: ${currentChatData.analysis.riskLevel}
+Overall Risk Score: ${currentChatData.analysis.totalRiskScore}/100
+Messages Analyzed: ${currentChatData.analysis.messageCount}
+Participants: ${currentChatData.analysis.participantCount}
+Threats Detected: ${currentChatData.analysis.threats.length}
+
+THREAT DETAILS:
+===============
+${currentChatData.analysis.threats.map(threat => `
+Type: ${threat.type.toUpperCase()}
+Confidence: ${threat.confidence}%
+Sender: ${threat.sender}
+Time: ${threat.timestamp}
+Description: ${threat.description}
+`).join('\n')}
+
+FAMILY VOICE DETECTION:
+======================
+Detected: ${currentChatData.analysis.familyVoiceDetected ? 'YES' : 'NO'}
+Score: ${currentChatData.analysis.familyVoiceScore}%
+
+SEXTORTION RISK:
+===============
+Risk Level: ${currentChatData.analysis.sextortionRisk}%
+
+RECOMMENDATIONS:
+===============
+${currentChatData.analysis.riskLevel === 'HIGH' ? 
+`- IMMEDIATE ACTION REQUIRED
+- Stop all communication with suspicious contacts
+- Report to cyber crime helpline: 1930
+- File police complaint if applicable
+- Seek professional support` :
+currentChatData.analysis.riskLevel === 'MEDIUM' ?
+`- Stay alert and verify identities
+- Don't share sensitive information  
+- Cross-check urgent requests
+- Monitor future communications` :
+`- Conversation appears safe
+- Continue normal precautions
+- Stay informed about new threats`}
+
+EMERGENCY CONTACTS:
+==================
+Cyber Crime Helpline: 1930
+Emergency Services: 112
+Mental Health Support: 9152987821 (AASRA)
+Women Helpline: 181
+
+This report was generated by CyberGuardian AI for security analysis purposes.
+Keep this document safe and share with authorities if needed.
+            `;
+            
+            // Download the report
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `WhatsApp_Analysis_Report_${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function shareAnalysis() {
+            if (!currentChatData) return;
+            
+            const shareText = `🛡️ WhatsApp Security Analysis by CyberGuardian AI
+            
+Risk Level: ${currentChatData.analysis.riskLevel}
+Threats Detected: ${currentChatData.analysis.threats.length}
+Messages Analyzed: ${currentChatData.analysis.messageCount}
+
+${currentChatData.analysis.riskLevel === 'HIGH' ? '🚨 HIGH RISK DETECTED - Take immediate action!' : 
+  currentChatData.analysis.riskLevel === 'MEDIUM' ? '⚠️ Some risks found - Stay alert!' : 
+  '✅ Conversation appears safe'}
+
+Stay safe online with CyberGuardian AI 🛡️`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'WhatsApp Security Analysis',
+                    text: shareText
+                });
+            } else {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Analysis summary copied to clipboard!');
+                });
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('WhatsApp Conversation Analyzer loaded');
+        });
+    </script>
+</body>
+</html>
