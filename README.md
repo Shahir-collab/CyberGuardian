@@ -120,6 +120,4 @@ currently implemented functionality.
 
 ## 📄 License
 
-No license has been specified yet. Add a license if you
-intend to permit others to use, modify, or distribute this
-project.
+MIT
